@@ -11,14 +11,20 @@ from yacut.views import get_unique_short_id
 
 @app.route('/api/id/<string:short_id>/', methods=['GET'])
 def get_original(short_id):
+    """
+    Получает оригинальную ссылку по заданному короткому идентификатору.
+    """
     url_map = URLMap.query.filter_by(short=short_id).first()
     if url_map is None:
-        raise InvalidAPIUsage('Указанный id не найден', 404)
+        raise InvalidAPIUsage('Указанный id не найден', HTTPStatus.NOT_FOUND)
     return jsonify({'url': url_map.original}), HTTPStatus.OK
 
 
 @app.route('/api/id/', methods=['POST'])
 def create_id():
+    """
+    Создает новую короткую ссылку на основе переданных данных.
+    """
     data = request.get_json()
     validate_create_id(data)
     if not data.get('custom_id'):
@@ -31,6 +37,9 @@ def create_id():
 
 
 def validate_create_id(data):
+    """
+    Проверяет данные, переданные для создания короткой ссылки на их валидность.
+    """
     if data is None:
         raise InvalidAPIUsage('Отсутствует тело запроса')
     if 'url' not in data:

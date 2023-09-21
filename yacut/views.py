@@ -9,6 +9,9 @@ from .models import URLMap
 
 
 def get_unique_short_id(length=6):
+    """
+    Генерирует уникальный короткий идентификатор заданной длины.
+    """
     characters = string.ascii_letters + string.digits
     sequence = ''.join(random.choice(characters) for _ in range(length))
     return sequence
@@ -16,9 +19,15 @@ def get_unique_short_id(length=6):
 
 @app.route('/', methods=['GET', 'POST'])
 def add_url_view():
+    """
+    Отображает форму для добавления нового URL-адреса.
+    """
     form = URLMapForm()
     if form.validate_on_submit():
         short = form.custom_id.data or get_unique_short_id()
+        if URLMap.query.filter_by(short=short).first():
+            flash('Пользовательская ссылка уже занята.')
+            return render_template('index.html', form=form)
         url = URLMap(
             original=form.original_link.data,
             short=short
@@ -31,6 +40,9 @@ def add_url_view():
 
 @app.route('/<string:short>')
 def index_view(short):
+    """
+    Функция перенаправления с короткой ссылки на длинную.
+    """
     return redirect(
         URLMap.query.filter_by(short=short).first_or_404().original
     )
