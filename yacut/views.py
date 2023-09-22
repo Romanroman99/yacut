@@ -24,10 +24,14 @@ def add_url_view():
     """
     form = URLMapForm()
     if form.validate_on_submit():
-        short = form.custom_id.data or get_unique_short_id()
-        if URLMap.query.filter_by(short=short).first():
+        custom_id = form.custom_id.data
+        if custom_id and URLMap.query.filter_by(short=custom_id).first():
             flash('Пользовательская ссылка уже занята.')
             return render_template('index.html', form=form)
+
+        short = custom_id or get_unique_short_id()
+        while URLMap.query.filter_by(short=short).first():
+            short = get_unique_short_id()
         url = URLMap(
             original=form.original_link.data,
             short=short
